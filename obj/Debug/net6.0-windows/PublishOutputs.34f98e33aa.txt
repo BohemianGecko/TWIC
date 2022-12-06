@@ -1,0 +1,8 @@
+D:\CodeProjects\TWIC\bin\Debug\net6.0-windows\publish\TWIC.exe
+D:\CodeProjects\TWIC\bin\Debug\net6.0-windows\publish\TWIC.dll
+D:\CodeProjects\TWIC\bin\Debug\net6.0-windows\publish\TWIC.deps.json
+D:\CodeProjects\TWIC\bin\Debug\net6.0-windows\publish\TWIC.runtimeconfig.json
+D:\CodeProjects\TWIC\bin\Debug\net6.0-windows\publish\TWIC.pdb
+D:\CodeProjects\TWIC\bin\Debug\net6.0-windows\publish\WindowsInput.dll
+D:\CodeProjects\TWIC\bin\Debug\net6.0-windows\publish\SharpDX.dll
+D:\CodeProjects\TWIC\bin\Debug\net6.0-windows\publish\SharpDX.XInput.dll
