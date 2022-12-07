@@ -1,6 +1,8 @@
 using WindowsInput;
 using SharpDX.XInput;
 using WindowsInput.Native;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace XBoxAsMouse
 {
@@ -10,7 +12,8 @@ namespace XBoxAsMouse
 		private const int ScrollDivider = 10_000;
 		private const int RefreshRate = 60;
 
-		private System.Threading.Timer _timer;
+		private System.Threading.Timer timerUpdate;
+		private System.Threading.Timer timerCheckBlockList;
 		private Controller _controller;
 		private IMouseSimulator _mouseSimulator;
 		private IKeyboardSimulator _keyboardSimulator;
@@ -20,26 +23,56 @@ namespace XBoxAsMouse
 		private bool _wasStartDown;
 		private DateTime _hotkeyLastPressed;
 		public bool MouseModeEnabled;
+		public bool ActiveProcessBlocklisted;
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);				
 
 		public XBoxControllerAsMouse()
 		{
 			_controller = new Controller(UserIndex.One);			
 			_mouseSimulator = new InputSimulator().Mouse;
 			_keyboardSimulator = new InputSimulator().Keyboard;
-			_timer = new  System.Threading.Timer(obj => Update());
+			timerUpdate = new  System.Threading.Timer(obj => Update());
+			timerCheckBlockList = new  System.Threading.Timer(obj => CheckBlackList());
 			_hotkeyLastPressed = new DateTime();
 		}
 
 		public void Start()
 		{
 			_hotkeyLastPressed = DateTime.Now;
-			_timer.Change(0, 1000 / RefreshRate);
+			ActiveProcessBlocklisted = false;
+
+			timerUpdate.Change(0, 1000 / RefreshRate);
+			timerCheckBlockList.Change(0, 2000);
+		}
+
+		private void CheckBlackList()
+		{			
+			var ForegroundWindow = GetForegroundWindow();
+         	uint processID;
+         	GetWindowThreadProcessId(ForegroundWindow, out processID);
+			var ActiveProcess = Process.GetProcessById((int)processID);
+			
+			List<string> BlackListApps = new List<string>() {"retroarch", "playnite.fullscreenapp", "stray","Yakuza0","EmulationStation" };
+			if (BlackListApps.Contains(ActiveProcess.ProcessName, StringComparer.OrdinalIgnoreCase))
+			{
+				ActiveProcessBlocklisted = true;
+			}	
+			else
+			{
+				ActiveProcessBlocklisted = false;
+			}
 		}
 
 		private void Update()
 		{
-			_controller.GetState(out var state);
-			if (MouseModeEnabled)
+			_controller.GetState(out var state);			
+	
+			
+			if (MouseModeEnabled && !ActiveProcessBlocklisted)
 			{
 				Movement(state);
 				Scroll(state);
